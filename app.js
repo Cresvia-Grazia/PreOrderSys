@@ -1,4 +1,4 @@
-const API_URL = "YOUR_APPS_SCRIPT_WEBAPP_URL"; // replace with your web app URL
+const API_URL = "https://script.google.com/macros/s/AKfycbz4pt4ib8wpTRA3EJfpycSZkipallgNtaI5QNBmIOaWG8uvsoQcp4JNkgp6768pw4gY4A/exec"; // replace with your web app URL
 let books=[], cart=[];
 
 async function loadBooks(){
