@@ -9,7 +9,7 @@
       font-family: Arial, sans-serif;
       margin: 0;
       display: flex;
-      flex-direction: row; /* two columns on desktop */
+      flex-direction: row; /* desktop: two columns */
       min-height: 100vh;
     }
 
@@ -30,14 +30,8 @@
 
     .book-item {
       margin-bottom: 10px;
-      padding: 10px;
+      padding: 8px;
       border-bottom: 1px solid #ddd;
-    }
-
-    .book-item img {
-      max-width: 100px;
-      display: block;
-      margin-top: 5px;
     }
 
     .order-item {
@@ -67,7 +61,7 @@
       cursor: pointer;
     }
 
-    /* Responsive: stack columns on small devices */
+    /* Responsive: stack on small devices */
     @media (max-width: 900px) {
       body {
         flex-direction: column;
@@ -80,7 +74,7 @@
 </head>
 <body>
 
-  <!-- LEFT COLUMN: Book List -->
+  <!-- LEFT COLUMN -->
   <div class="sidebar">
     <h2>Pre-order your next read 📚</h2>
 
@@ -93,12 +87,10 @@
     <div id="book-list">Loading books...</div>
   </div>
 
-  <!-- RIGHT COLUMN: Order Summary + Form -->
+  <!-- RIGHT COLUMN -->
   <div class="content">
     <h2>Your Pre-Order</h2>
-    <div id="order-summary">
-      <p>No books selected yet.</p>
-    </div>
+    <div id="order-summary"><p>No books selected yet.</p></div>
 
     <h3>Customer Information</h3>
     <form id="order-form">
@@ -106,7 +98,7 @@
       <input type="email" name="email" placeholder="Email Address" required>
       <input type="text" name="contact" placeholder="Contact Number" required>
       <input type="text" name="fb" placeholder="FB Name">
-      
+
       <label>Pick-up Location:</label>
       <select name="pickup" required>
         <option value="">-- Select --</option>
@@ -133,32 +125,32 @@
     </div>
   </div>
 
-  <!-- SCRIPT -->
   <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwOg4Vt1so9FS9BcizBKfRmZgQG1ydz4fjo3VgtYigq68SGg4uOyJfinagZKpuLDdaohw/exec";
+
     let books = [];
     let cart = [];
 
     const bookList = document.getElementById("book-list");
     const orderSummary = document.getElementById("order-summary");
 
-    // Fetch books from Google Sheets (replace with your Apps Script GET URL)
-    fetch("https://script.google.com/macros/s/AKfycbwOg4Vt1so9FS9BcizBKfRmZgQG1ydz4fjo3VgtYigq68SGg4uOyJfinagZKpuLDdaohw/exec")
+    // Fetch books from Google Sheets
+    fetch(API_URL)
       .then(res => res.json())
       .then(data => {
         books = data;
         renderBooks(getSelectedFilter());
       })
       .catch(err => {
-        bookList.innerHTML = "<p style='color:red;'>Failed to load books. Check Apps Script URL or CORS.</p>";
+        bookList.innerHTML = "<p style='color:red;'>Failed to load books. Check Apps Script.</p>";
         console.error(err);
       });
 
-    // Get current filter
     function getSelectedFilter() {
       return document.querySelector('input[name="filter"]:checked').value;
     }
 
-    // Listen to filter change
+    // Filter change listener
     document.querySelectorAll('input[name="filter"]').forEach(radio => {
       radio.addEventListener('change', () => renderBooks(getSelectedFilter()));
     });
@@ -241,7 +233,7 @@
         total: cart.reduce((sum, b) => sum + Number(b.discounted || b.price), 0)
       };
 
-      fetch("YOUR_APPS_SCRIPT_URL", {
+      fetch(API_URL, {
         method: "POST",
         body: JSON.stringify(order),
         headers: { "Content-Type": "application/json" }
