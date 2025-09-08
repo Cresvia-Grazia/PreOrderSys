@@ -1,43 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8">
   <title>Book Preorder</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Feast Book Preorder</h1>
+  <h1>Book Preorder Form</h1>
+  <form id="orderForm" enctype="multipart/form-data">
+    <label>Order ID</label>
+    <input type="text" name="orderId" required><br>
 
-  <input id="search" placeholder="Search title, author, genre, location...">
-  <div id="bookList"></div>
+    <label>Full Name</label>
+    <input type="text" name="fullName" required><br>
 
-  <h2>Your Cart</h2>
-  <div id="cart"></div>
-  <div>Total: ₱<span id="total">0</span></div>
+    <label>Contact Number</label>
+    <input type="text" name="contactNumber" required><br>
 
-  <label>Pickup Location
-    <select id="pickup">
-      <option>Feast sacred heart - Monday</option>
-      <option>Feast it park - Saturday</option>
-      <option>Feast golden prince - Saturday</option>
-      <option>Feast ayala - Sunday</option>
-    </select>
-  </label>
-  <button id="checkout">Checkout</button>
+    <label>Email</label>
+    <input type="email" name="email" required><br>
 
-  <div id="formArea" style="display:none;">
-    <h3>Customer Information</h3>
-    <form id="custForm">
-      <input name="fullName" placeholder="Full Name" required>
-      <input name="email" type="email" placeholder="Email" required>
-      <input name="contact" placeholder="Contact Number" required>
-      <input name="fbname" placeholder="FB Name">
-      <button type="submit">Submit Order</button>
-    </form>
-  </div>
+    <label>Facebook Name</label>
+    <input type="text" name="fbName"><br>
 
-  <p><b>Disclaimer:</b> Pick-up only. For faster transaction, pay first then upload receipt.</p>
+    <label>Upload Payment Slip</label>
+    <input type="file" name="paymentSlip" accept="image/*,application/pdf" required><br>
+
+    <button type="submit">Submit Order</button>
+  </form>
+
+  <p id="msg"></p>
 
   <script src="app.js"></script>
 </body>
