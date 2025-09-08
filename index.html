@@ -2,35 +2,206 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Book Preorder</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Pre-Order</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 33%;
+      background: #f5f5f5;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    h2, h3 { margin-top: 0; }
+    .book-item {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .book-item img {
+      max-width: 100px;
+      display: block;
+      margin-top: 5px;
+    }
+    .order-item {
+      margin-bottom: 8px;
+      border-bottom: 1px dashed #bbb;
+      padding-bottom: 5px;
+    }
+    form input, form select {
+      width: 100%;
+      margin: 5px 0;
+      padding: 8px;
+    }
+    .disclaimer {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 20px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      background: #0077cc;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h1>Book Preorder Form</h1>
-  <form id="orderForm" enctype="multipart/form-data">
-    <label>Order ID</label>
-    <input type="text" name="orderId" required><br>
 
-    <label>Full Name</label>
-    <input type="text" name="fullName" required><br>
+  <!-- LEFT COLUMN -->
+  <div class="sidebar">
+    <h2>Pre-order your next read with us 📚</h2>
+    <div>
+      <label><input type="radio" name="filter" value="title" checked> Title</label>
+      <label><input type="radio" name="filter" value="author"> Author</label>
+      <label><input type="radio" name="filter" value="genre"> Genre</label>
+    </div>
+    <div id="book-list">
+      Loading books...
+    </div>
+  </div>
 
-    <label>Contact Number</label>
-    <input type="text" name="contactNumber" required><br>
+  <!-- RIGHT COLUMN -->
+  <div class="content">
+    <h2>Your Pre-Order</h2>
+    <div id="order-summary">
+      <p>No books selected yet.</p>
+    </div>
 
-    <label>Email</label>
-    <input type="email" name="email" required><br>
+    <h3>Customer Information</h3>
+    <form id="order-form">
+      <input type="text" name="fullname" placeholder="Full Name" required>
+      <input type="email" name="email" placeholder="Email Address" required>
+      <input type="text" name="contact" placeholder="Contact Number" required>
+      <input type="text" name="fb" placeholder="FB Name">
+      <label>Pick-up Location:</label>
+      <select name="pickup" required>
+        <option value="">-- Select --</option>
+        <option>Feast Sacred Heart - Monday</option>
+        <option>Feast IT Park - Saturday</option>
+        <option>Feast Golden Prince - Saturday</option>
+        <option>Feast Ayala - Sunday</option>
+      </select>
+      <input type="date" name="pickupdate" required>
 
-    <label>Facebook Name</label>
-    <input type="text" name="fbName"><br>
+      <button type="submit">Confirm Order</button>
+    </form>
 
-    <label>Upload Payment Slip</label>
-    <input type="file" name="paymentSlip" accept="image/*,application/pdf" required><br>
+    <div class="disclaimer">
+      <p><strong>Disclaimer:</strong></p>
+      <ul>
+        <li>Pick-up only option</li>
+        <li>For faster transactions, please pay first</li>
+      </ul>
+      <p><strong>Payment Options:</strong></p>
+      <p>GCash / Paymaya<br>
+      Account Name: <b>cherel</b><br>
+      Account Number: <b>09126456792</b></p>
+    </div>
+  </div>
 
-    <button type="submit">Submit Order</button>
-  </form>
+  <script>
+    let books = [];
+    let cart = [];
+    const bookList = document.getElementById("book-list");
+    const orderSummary = document.getElementById("order-summary");
 
-  <p id="msg"></p>
+    // Fetch books from Google Sheets
+    fetch("YOUR_APPS_SCRIPT_URL")
+      .then(res => res.json())
+      .then(data => {
+        books = data;
+        renderBooks();
+      });
 
-  <script src="app.js"></script>
+    function renderBooks() {
+      bookList.innerHTML = "";
+      books.forEach((book, index) => {
+        const div = document.createElement("div");
+        div.className = "book-item";
+        div.innerHTML = `
+          <label>
+            <input type="checkbox" value="${index}" onchange="toggleBook(${index})">
+            <b>${book.title}</b> by ${book.author} (${book.genre}) - ₱${book.discounted || book.price}
+          </label>
+          ${book.image ? `<img src="${book.image}" alt="${book.title}">` : ""}
+          <p>${book.description || ""}</p>
+        `;
+        bookList.appendChild(div);
+      });
+    }
+
+    function toggleBook(index) {
+      const book = books[index];
+      if (cart.includes(book)) {
+        cart = cart.filter(b => b !== book);
+      } else {
+        cart.push(book);
+      }
+      renderOrder();
+    }
+
+    function renderOrder() {
+      orderSummary.innerHTML = "";
+      if (cart.length === 0) {
+        orderSummary.innerHTML = "<p>No books selected yet.</p>";
+        return;
+      }
+      let total = 0;
+      cart.forEach((book, idx) => {
+        const price = book.discounted || book.price;
+        total += Number(price);
+        const div = document.createElement("div");
+        div.className = "order-item";
+        div.innerText = `${idx+1}. "${book.title}" by ${book.author} | ₱${price}`;
+        orderSummary.appendChild(div);
+      });
+      const totalDiv = document.createElement("p");
+      totalDiv.innerHTML = `<b>Total: ₱${total}</b>`;
+      orderSummary.appendChild(totalDiv);
+    }
+
+    // Handle form submit
+    document.getElementById("order-form").addEventListener("submit", function(e){
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const order = {
+        fullname: formData.get("fullname"),
+        email: formData.get("email"),
+        contact: formData.get("contact"),
+        fb: formData.get("fb"),
+        pickup: formData.get("pickup"),
+        pickupdate: formData.get("pickupdate"),
+        items: cart,
+        total: cart.reduce((sum, b) => sum + Number(b.discounted || b.price), 0)
+      };
+
+      fetch("YOUR_APPS_SCRIPT_URL", {
+        method: "POST",
+        body: JSON.stringify(order),
+        headers: { "Content-Type": "application/json" }
+      })
+      .then(res => res.json())
+      .then(response => {
+        alert("Order confirmed! Your Order ID: " + response.orderId);
+        this.reset();
+        cart = [];
+        renderOrder();
+      });
+    });
+  </script>
 </body>
 </html>
