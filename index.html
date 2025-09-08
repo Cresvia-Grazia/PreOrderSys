@@ -9,45 +9,55 @@
       font-family: Arial, sans-serif;
       margin: 0;
       display: flex;
-      height: 100vh;
+      flex-direction: row; /* two columns on desktop */
+      min-height: 100vh;
     }
+
     .sidebar {
       width: 33%;
       background: #f5f5f5;
       padding: 20px;
       overflow-y: auto;
     }
+
     .content {
       flex: 1;
       padding: 20px;
       overflow-y: auto;
     }
+
     h2, h3 { margin-top: 0; }
+
     .book-item {
       margin-bottom: 10px;
       padding: 10px;
       border-bottom: 1px solid #ddd;
     }
+
     .book-item img {
       max-width: 100px;
       display: block;
       margin-top: 5px;
     }
+
     .order-item {
       margin-bottom: 8px;
       border-bottom: 1px dashed #bbb;
       padding-bottom: 5px;
     }
+
     form input, form select {
       width: 100%;
       margin: 5px 0;
       padding: 8px;
     }
+
     .disclaimer {
       font-size: 0.9em;
       color: #555;
       margin-top: 20px;
     }
+
     button {
       margin-top: 15px;
       padding: 10px;
@@ -56,24 +66,34 @@
       border: none;
       cursor: pointer;
     }
+
+    /* Responsive: stack columns on small devices */
+    @media (max-width: 900px) {
+      body {
+        flex-direction: column;
+      }
+      .sidebar, .content {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <!-- LEFT COLUMN -->
+  <!-- LEFT COLUMN: Book List -->
   <div class="sidebar">
-    <h2>Pre-order your next read with us 📚</h2>
+    <h2>Pre-order your next read 📚</h2>
+
     <div>
       <label><input type="radio" name="filter" value="title" checked> Title</label>
       <label><input type="radio" name="filter" value="author"> Author</label>
       <label><input type="radio" name="filter" value="genre"> Genre</label>
     </div>
-    <div id="book-list">
-      Loading books...
-    </div>
+
+    <div id="book-list">Loading books...</div>
   </div>
 
-  <!-- RIGHT COLUMN -->
+  <!-- RIGHT COLUMN: Order Summary + Form -->
   <div class="content">
     <h2>Your Pre-Order</h2>
     <div id="order-summary">
@@ -86,6 +106,7 @@
       <input type="email" name="email" placeholder="Email Address" required>
       <input type="text" name="contact" placeholder="Contact Number" required>
       <input type="text" name="fb" placeholder="FB Name">
+      
       <label>Pick-up Location:</label>
       <select name="pickup" required>
         <option value="">-- Select --</option>
@@ -94,8 +115,8 @@
         <option>Feast Golden Prince - Saturday</option>
         <option>Feast Ayala - Sunday</option>
       </select>
-      <input type="date" name="pickupdate" required>
 
+      <input type="date" name="pickupdate" required>
       <button type="submit">Confirm Order</button>
     </form>
 
@@ -112,36 +133,35 @@
     </div>
   </div>
 
+  <!-- SCRIPT -->
   <script>
     let books = [];
     let cart = [];
+
     const bookList = document.getElementById("book-list");
     const orderSummary = document.getElementById("order-summary");
 
-    // Fetch books from Google Sheets
-    fetch("https://script.google.com/u/0/home/projects/1CeVpFrpQH-DzNhFJ2xLyoJ4RhbxM-AzlIaI8mdyx0N7WP_nd-mYID4nq/edit")
+    // Fetch books from Google Sheets (replace with your Apps Script GET URL)
+    fetch("https://script.google.com/macros/s/AKfycbzJR5yjV0Fhf8Fyxu7LKWzo3ysepngkGZl3b_xAvRm4DohGXWhxA1r6K_88v2mGcPhn5Q/exec")
       .then(res => res.json())
       .then(data => {
         books = data;
-        renderBooks();
+        renderBooks(getSelectedFilter());
+      })
+      .catch(err => {
+        bookList.innerHTML = "<p style='color:red;'>Failed to load books. Check Apps Script URL or CORS.</p>";
+        console.error(err);
       });
 
-    function renderBooks() {
-      bookList.innerHTML = "";
-      books.forEach((book, index) => {
-        const div = document.createElement("div");
-        div.className = "book-item";
-        div.innerHTML = `
-          <label>
-            <input type="checkbox" value="${index}" onchange="toggleBook(${index})">
-            <b>${book.title}</b> by ${book.author} (${book.genre}) - ₱${book.discounted || book.price}
-          </label>
-          ${book.image ? `<img src="${book.image}" alt="${book.title}">` : ""}
-          <p>${book.description || ""}</p>
-        `;
-        bookList.appendChild(div);
-      });
+    // Get current filter
+    function getSelectedFilter() {
+      return document.querySelector('input[name="filter"]:checked').value;
     }
+
+    // Listen to filter change
+    document.querySelectorAll('input[name="filter"]').forEach(radio => {
+      radio.addEventListener('change', () => renderBooks(getSelectedFilter()));
+    });
 
     function toggleBook(index) {
       const book = books[index];
@@ -153,12 +173,38 @@
       renderOrder();
     }
 
+    function renderBooks(filter) {
+      bookList.innerHTML = "";
+      books.forEach((book, index) => {
+        const div = document.createElement("div");
+        div.className = "book-item";
+
+        let text = "";
+        if (filter === "title") {
+          text = `${book.title} by ${book.author}`;
+        } else if (filter === "author") {
+          text = `${book.title}`;
+        } else if (filter === "genre") {
+          text = `${book.title} by ${book.author}`;
+        }
+
+        div.innerHTML = `
+          <label>
+            <input type="checkbox" value="${index}" onchange="toggleBook(${index})">
+            ${text}
+          </label>
+        `;
+        bookList.appendChild(div);
+      });
+    }
+
     function renderOrder() {
       orderSummary.innerHTML = "";
       if (cart.length === 0) {
         orderSummary.innerHTML = "<p>No books selected yet.</p>";
         return;
       }
+
       let total = 0;
       cart.forEach((book, idx) => {
         const price = book.discounted || book.price;
@@ -168,6 +214,7 @@
         div.innerText = `${idx+1}. "${book.title}" by ${book.author} | ₱${price}`;
         orderSummary.appendChild(div);
       });
+
       const totalDiv = document.createElement("p");
       totalDiv.innerHTML = `<b>Total: ₱${total}</b>`;
       orderSummary.appendChild(totalDiv);
@@ -176,6 +223,11 @@
     // Handle form submit
     document.getElementById("order-form").addEventListener("submit", function(e){
       e.preventDefault();
+
+      if(cart.length === 0) {
+        alert("Please select at least one book before confirming order.");
+        return;
+      }
 
       const formData = new FormData(this);
       const order = {
@@ -200,6 +252,10 @@
         this.reset();
         cart = [];
         renderOrder();
+      })
+      .catch(err => {
+        alert("Failed to submit order. Please try again.");
+        console.error(err);
       });
     });
   </script>
