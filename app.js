@@ -6,7 +6,7 @@ document.getElementById("orderForm").addEventListener("submit", async (e) => {
 
   // Send data to Google Apps Script Web App
   try {
-    let response = await fetch("https://script.google.com/macros/s/AKfycbyLASAkmIjxzkMjQ6agBzrg9OhDxeJW9lEVw50lF5v6eiyDR0BRL_BPa7V-b-rbOOaIEg/exec", {
+    let response = await fetch("https://script.google.com/macros/s/AKfycbzSBGxiR8L82AYMdZnxFVRuZYn45bI0CouAuF8gb11aGYIVR4DwZcD7RqGsjTWVbcX7bA/exec", {
       method: "POST",
       body: data,
     });
