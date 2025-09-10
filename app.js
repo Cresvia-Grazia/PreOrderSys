@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyI_0ovHIuIlybc4_ffEJAjJ7WK7T8WRnDlrPae7nDQMs5j7_wiryBukQf59Za46-xYAw/exec"; // backend URL
+const API_URL = "https://script.google.com/macros/s/AKfycbyI_0ovHIuIlybc4_ffEJAjJ7WK7T8WRnDlrPae7nDQMs5j7_wiryBukQf59Za46-xYAw/exec";
 
 let cart = [];
 let books = [];
