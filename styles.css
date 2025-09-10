@@ -1,6 +1,1 @@
-body { font-family: sans-serif; margin: 2rem; background: #fafafa; }
-h1,h2 { color: #333; }
-#bookList { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1rem; margin:1rem 0; }
-.card { background:#fff; padding:1rem; border:1px solid #ddd; border-radius:8px; }
-.card button { margin-top:0.5rem; }
-#cart div { margin:0.2rem 0; }
+
