@@ -3,202 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Book Pre-Order</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    header { background: #222; color: #fff; padding: 1rem; text-align: center; }
-    main { display: flex; flex-wrap: wrap; }
-    #filters { flex: 1 1 100%; padding: 1rem; background: #f5f5f5; }
-    #book-list { flex: 2 1 60%; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; padding: 1rem; }
-    .book-card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; background: #fff; display: flex; flex-direction: column; }
-    .book-card img { width: 100%; height: 250px; object-fit: cover; border-radius: 4px; margin-bottom: .5rem; }
-    .book-card h3 { margin: .3rem 0; font-size: 1.1rem; }
-    .book-card p { margin: .2rem 0; font-size: .9rem; }
-    .out-stock { color: red; font-weight: bold; }
-    #cart { flex: 1 1 40%; padding: 1rem; border-left: 2px solid #eee; background: #fafafa; }
-    #cart table { width: 100%; border-collapse: collapse; }
-    #cart th, #cart td { border-bottom: 1px solid #ddd; padding: .5rem; font-size: .9rem; }
-    @media(max-width: 768px) {
-      main { flex-direction: column; }
-      #cart { border-left: none; border-top: 2px solid #eee; }
-    }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <title>📚 Book Reservation</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>📚 Pre-order your next read with us</h1>
+    <h1>📖 Book Reservation</h1>
+    <p>Choose your books, add to cart, and reserve safely.</p>
   </header>
-  <main>
-    <section id="filters">
-      <label><input type="radio" name="filterType" value="Title" checked> Title</label>
-      <label><input type="radio" name="filterType" value="Author"> Author</label>
-      <label><input type="radio" name="filterType" value="Genre"> Genre</label>
-      <input type="text" id="searchBox" placeholder="Search...">
-      <select id="filterDropdown" style="display:none"></select>
-    </section>
-    <section id="book-list"></section>
-    <aside id="cart">
+
+  <main class="container">
+    <!-- Filters -->
+    <div class="filters">
+      <label><input type="radio" name="filterType" value="title" checked> Title</label>
+      <label><input type="radio" name="filterType" value="author"> Author</label>
+      <label><input type="radio" name="filterType" value="genre"> Genre</label>
+      <select id="filterDropdown" style="display:none;"></select>
+    </div>
+
+    <!-- Book List -->
+    <div id="book-list" class="book-list"></div>
+
+    <!-- Cart -->
+    <div class="cart">
       <h2>Your Cart</h2>
       <table id="cart-table">
         <thead>
-          <tr><th>No.</th><th>Book</th><th>Qty</th><th>Subtotal</th><th></th></tr>
+          <tr><th>#</th><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th><th>Remove</th></tr>
         </thead>
         <tbody></tbody>
       </table>
-      <p><strong>Total: ₱<span id="cart-total">0</span></strong></p>
-      <button id="confirmOrder">Confirm Order</button>
-      <p style="font-size:.8rem; margin-top:1rem;">
-        Disclaimer:<br>
-        - No personal information will be collected here. Once order is submitted, you’ll be redirected to a form to confirm.<br>
-        - Payment first policy before reservation is completed.<br>
-        - Pick-up only option.<br>
-        - Payment via GCash/Paymaya<br>
-        Account Name: cherel | Account #: 09126456792
-      </p>
-    </aside>
+      <div class="total" id="cart-total">Total: ₱0.00</div>
+      <button class="confirm-btn" onclick="placeOrder()">Confirm Order</button>
+    </div>
   </main>
 
-  <script>
-    const SHEET_ID = "1Gm7u6JoGClHvMTJnTAz5f6PMeysrGrdpLMUaT-IJIxA";
-    const GID_INVENTORY = "0";
-    const INVENTORY_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_INVENTORY}`;
-
-    let inventory = [];
-    let cart = [];
-
-    async function loadInventory() {
-      const res = await fetch(INVENTORY_URL);
-      const csv = await res.text();
-      inventory = Papa.parse(csv, { header: true }).data.filter(row => row.Title);
-      renderBooks(inventory);
-      setupFilters();
-    }
-
-    function renderBooks(books) {
-      const container = document.getElementById("book-list");
-      container.innerHTML = "";
-      books.forEach((book, idx) => {
-        const price = book["Discounted Price"] || book.Price;
-        const original = book["Discounted Price"] ? `<s>₱${book.Price}</s>` : "";
-        const stock = parseInt(book.Stock) || 0;
-
-        const card = document.createElement("div");
-        card.className = "book-card";
-        card.innerHTML = `
-          <img src="${book.ImageURL || 'https://via.placeholder.com/200x250'}" alt="${book.Title}">
-          <h3>${book.Title}</h3>
-          <p>by ${book.Author}</p>
-          <p><em>${book.Genre}</em></p>
-          <p>${book.Description || ""}</p>
-          <p>${original} <strong>₱${price}</strong></p>
-          ${stock > 0 
-            ? `<label><input type="checkbox" data-idx="${idx}"> Add to cart</label>` 
-            : `<p class="out-stock">Out of stock</p>`}
-        `;
-        container.appendChild(card);
-      });
-      bindCheckboxes();
-    }
-
-    function bindCheckboxes() {
-      document.querySelectorAll(".book-card input[type=checkbox]").forEach(cb => {
-        cb.addEventListener("change", e => {
-          const idx = e.target.dataset.idx;
-          if (e.target.checked) addToCart(idx); else removeFromCart(idx);
-        });
-      });
-    }
-
-    function addToCart(idx) {
-      const book = inventory[idx];
-      if (!cart.find(item => item.idx == idx)) {
-        cart.push({ idx, qty: 1 });
-      }
-      renderCart();
-    }
-
-    function removeFromCart(idx) {
-      cart = cart.filter(item => item.idx != idx);
-      renderCart();
-    }
-
-    function renderCart() {
-      const tbody = document.querySelector("#cart-table tbody");
-      tbody.innerHTML = "";
-      let total = 0;
-      cart.forEach((item, i) => {
-        const book = inventory[item.idx];
-        const price = book["Discounted Price"] || book.Price;
-        const subtotal = item.qty * parseFloat(price);
-        total += subtotal;
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${i+1}</td>
-          <td>"${book.Title}" by ${book.Author}</td>
-          <td><input type="number" min="1" value="${item.qty}" data-idx="${item.idx}" style="width:50px"></td>
-          <td>₱${subtotal}</td>
-          <td><button data-remove="${item.idx}">❌</button></td>
-        `;
-        tbody.appendChild(row);
-      });
-      document.getElementById("cart-total").innerText = total;
-
-      tbody.querySelectorAll("input[type=number]").forEach(input => {
-        input.addEventListener("change", e => {
-          const idx = e.target.dataset.idx;
-          const item = cart.find(it => it.idx == idx);
-          item.qty = parseInt(e.target.value);
-          renderCart();
-        });
-      });
-      tbody.querySelectorAll("button[data-remove]").forEach(btn => {
-        btn.addEventListener("click", e => removeFromCart(e.target.dataset.remove));
-      });
-    }
-
-    function setupFilters() {
-      const radios = document.querySelectorAll("input[name=filterType]");
-      const dropdown = document.getElementById("filterDropdown");
-      radios.forEach(r => r.addEventListener("change", e => {
-        if (e.target.value === "Author" || e.target.value === "Genre") {
-          const values = [...new Set(inventory.map(b => b[e.target.value]).filter(Boolean))];
-          dropdown.innerHTML = values.map(v => `<option>${v}</option>`).join("");
-          dropdown.style.display = "inline-block";
-        } else {
-          dropdown.style.display = "none";
-        }
-      }));
-
-      document.getElementById("searchBox").addEventListener("input", filterBooks);
-      dropdown.addEventListener("change", filterBooks);
-    }
-
-    function filterBooks() {
-      const filterType = document.querySelector("input[name=filterType]:checked").value;
-      const query = document.getElementById("searchBox").value.toLowerCase();
-      const dropdown = document.getElementById("filterDropdown");
-      let filtered = inventory;
-
-      if (filterType === "Title" && query) {
-        filtered = inventory.filter(b => b.Title.toLowerCase().includes(query));
-      } else if (filterType === "Author") {
-        filtered = inventory.filter(b => b.Author === dropdown.value);
-      } else if (filterType === "Genre") {
-        filtered = inventory.filter(b => b.Genre === dropdown.value);
-      }
-      renderBooks(filtered);
-    }
-
-    document.getElementById("confirmOrder").addEventListener("click", () => {
-      if (!cart.length) return alert("Your cart is empty!");
-      const orderId = "ORDID-" + new Date().toISOString().slice(0,10).replace(/-/g,"") + Math.floor(Math.random()*1000);
-      alert("Your Order ID: " + orderId + "\nYou will be redirected to confirm your reservation.");
-      // TODO: redirect to Google Form prefill
-      window.open("https://docs.google.com/forms/d/151aja0bTJXGiW-wN0Peo7nUIIbNLpMyEetKhPOWnscU/viewform", "_blank");
-    });
-
-    document.addEventListener("DOMContentLoaded", loadInventory);
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
