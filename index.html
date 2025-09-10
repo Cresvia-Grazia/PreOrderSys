@@ -1,258 +1,294 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Book Reservation — Simple & Clean</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book Pre-Order</title>
   <style>
-    :root{--accent:#2d6a4f;--muted:#6b7280;--bg:#f8f9fb}
-    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:#0f172a;margin:0;padding:0}
-    header{background:linear-gradient(135deg,var(--accent),#40916c);color:#fff;padding:28px 20px;text-align:center}
-    header h1{margin:0;font-size:20px}
-    .container{max-width:1100px;margin:20px auto;padding:0 16px}
-    .filters{background:#fff;padding:12px;border-radius:10px;box-shadow:0 2px 6px rgba(15,23,42,0.06);display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
-    .filters label{font-weight:600;color:#123;cursor:pointer}
-    select, input[type=text]{padding:8px;border-radius:8px;border:1px solid #e6eef4}
-    .layout{display:grid;grid-template-columns:1fr 360px;gap:16px}
-    .card{background:#fff;padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(15,23,42,0.04)}
-    .book-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-    .book{border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 1px 6px rgba(15,23,42,0.04);display:flex;flex-direction:column}
-    .book img{width:100%;height:200px;object-fit:cover}
-    .bd{padding:10px;flex:1;display:flex;flex-direction:column}
-    .bd h3{margin:0;font-size:16px;color:#0b3f2f}
-    .meta{font-size:13px;color:var(--muted);margin:6px 0}
-    .desc{font-size:13px;color:#334155;flex:1;margin-bottom:8px}
-    .foot{display:flex;justify-content:space-between;align-items:center;gap:8px}
-    .price{font-weight:700;color:var(--accent)}
-    .btn{background:var(--accent);color:#fff;border:0;padding:8px 10px;border-radius:8px;cursor:pointer}
-    /* cart */
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;border-bottom:1px solid #f1f5f9;font-size:14px}
-    th{text-align:left;background:#f8fafc}
-    input.qty{width:64px;padding:6px;border-radius:6px;border:1px solid #e6eef4}
-    .total{font-weight:800;text-align:right;margin-top:12px}
-    .confirm{margin-top:12px;background:#1b4332;color:#fff;border:0;padding:10px;border-radius:8px;width:100%;cursor:pointer}
-    @media(max-width:900px){.layout{grid-template-columns:1fr}}
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #f3f4f6;
+      color: #1f2937;
+    }
+    header {
+      background: #1e40af;
+      color: white;
+      padding: 16px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      padding: 12px;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .book-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+      gap: 16px;
+      padding: 16px;
+    }
+    .book-card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .book-card img {
+      width: 100%; height: 280px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .book-card h3 {
+      margin: 10px 0 4px;
+      font-size: 16px;
+    }
+    .book-card p {
+      margin: 0; font-size: 14px;
+      color: #4b5563;
+    }
+    .price {
+      margin-top: 6px;
+      font-weight: bold;
+      color: #1e40af;
+    }
+    .book-card button {
+      margin-top: 10px;
+      background: #1e40af;
+      color: white;
+      border: none;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .book-card button:hover {
+      background: #2563eb;
+    }
+    /* Floating cart button */
+    .floating-cart {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e40af;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 12px 18px;
+      border-radius: 50px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      cursor: pointer;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease-in-out;
+    }
+    .floating-cart:hover { background: #2563eb; transform: scale(1.05); }
+    #cart-count {
+      background: red;
+      border-radius: 50%;
+      padding: 3px 7px;
+      font-size: 14px;
+    }
+    /* Cart drawer */
+    .cart-drawer {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 350px;
+      height: 100%;
+      background: #f9fafb;
+      box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+      padding: 16px;
+      transition: right 0.3s ease-in-out;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .cart-drawer.open { right: 0; }
+    .cart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 8px;
+    }
+    .cart-header h2 { margin: 0; font-size: 20px; color: #1f2937; }
+    .cart-header button {
+      background: none; border: none;
+      font-size: 18px; cursor: pointer;
+    }
+    #cart-items { flex: 1; overflow-y: auto; margin: 12px 0; }
+    .cart-item {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 8px;
+      padding: 6px 0; border-bottom: 1px solid #e5e7eb;
+      font-size: 14px;
+    }
+    .cart-footer {
+      border-top: 2px solid #e5e7eb;
+      padding-top: 10px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    #checkout-btn {
+      background: #1e40af; color: white;
+      border: none; padding: 10px;
+      border-radius: 6px; font-size: 16px;
+      cursor: pointer;
+    }
+    #checkout-btn:hover { background: #2563eb; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>📚 Book Reservation</h1>
-    <div style="margin-top:6px;color:rgba(255,255,255,0.9);font-size:13px">Simple reservation — no extra fields. Pick books, confirm, we're saving your reservation.</div>
-  </header>
+  <header>📚 Pre-order your next read with us</header>
 
-  <div class="container">
-    <div class="filters card">
-      <div>
-        <label><input type="radio" name="filterBy" value="title" checked> Title</label>
-        <label><input type="radio" name="filterBy" value="author"> Author</label>
-        <label><input type="radio" name="filterBy" value="genre"> Genre</label>
-      </div>
-      <div id="filterDropdownWrap" style="margin-left:auto"></div>
-      <div><input type="text" id="search" placeholder="Search title..." style="min-width:180px"></div>
+  <div class="filter-bar">
+    <label><input type="radio" name="filter" value="title" checked> Title</label>
+    <label><input type="radio" name="filter" value="author"> Author</label>
+    <label><input type="radio" name="filter" value="genre"> Genre</label>
+    <select id="filter-dropdown" style="display:none"></select>
+  </div>
+
+  <div class="book-list" id="book-list"></div>
+
+  <!-- Floating Cart -->
+  <div id="floating-cart" class="floating-cart">🛒 <span id="cart-count">0</span></div>
+
+  <!-- Slide-out Cart Drawer -->
+  <div id="cart-drawer" class="cart-drawer">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <button id="close-cart">✖</button>
     </div>
-
-    <div class="layout">
-      <section class="card">
-        <div id="bookList" class="book-list">
-          <!-- books inserted here -->
-        </div>
-      </section>
-
-      <aside class="card">
-        <h3 style="margin:0 0 8px">Cart</h3>
-        <div id="cartEmpty" style="color:var(--muted)">No items selected.</div>
-        <div id="cartArea" style="display:none">
-          <table id="cartTable">
-            <thead><tr><th style="width:36px">#</th><th>Item</th><th style="width:80px">Qty</th><th style="width:90px">Price</th><th style="width:110px">Subtotal</th><th style="width:56px"></th></tr></thead>
-            <tbody></tbody>
-          </table>
-          <div class="total" id="cartTotal">₱0.00</div>
-          <button class="confirm" id="confirmBtn">Confirm Order</button>
-        </div>
-      </aside>
+    <div id="cart-items"></div>
+    <div class="cart-footer">
+      <p>Total: ₱<span id="cart-total">0</span></p>
+      <button id="checkout-btn">Confirm Order</button>
     </div>
   </div>
 
-<script>
-/* ====== CONFIG ====== */
-const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbz-LSYMGj7sfj7KxxpGEPhBBqyme47Ua-RD0GHRE0Fv18mUnzuz3Ve3IbUZHMqF-hK9vA/exec';
-/* If you enable SECRET_TOKEN on server, set it here; otherwise leave blank */
-const SECRET_TOKEN = ''; // optional
-/* ====== END CONFIG ====== */
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbz-LSYMGj7sfj7KxxpGEPhBBqyme47Ua-RD0GHRE0Fv18mUnzuz3Ve3IbUZHMqF-hK9vA/exec";
 
-let inventory = [];
-let cart = {}; // key => { title, author, price, qty }
+    let books = [];
+    let cart = [];
 
-/* utility */
-const el = id => document.getElementById(id);
-const format = n => '₱' + Number(n || 0).toFixed(2);
-
-/* load inventory */
-async function loadBooks() {
-  try {
-    const res = await fetch(WEBAPP_URL + '?action=getBooks');
-    const json = await res.json();
-    if (!json.books) {
-      document.getElementById('bookList').innerHTML = '<div style="color:#ef4444">No books found.</div>';
-      return;
+    async function loadBooks() {
+      try {
+        const res = await fetch(API_URL + "?action=getBooks");
+        const data = await res.json();
+        books = data.books.map(b => ({
+          title: b.Title,
+          author: b.Author,
+          genre: b.Genre,
+          price: b["Discounted Price"] && b["Discounted Price"] !== "" ? parseFloat(b["Discounted Price"]) : parseFloat(b.Price),
+          image: b.ImageURL || "https://via.placeholder.com/200x300?text=No+Image",
+          description: b.Description || ""
+        }));
+        renderBooks(books);
+      } catch (err) {
+        document.getElementById("book-list").innerHTML = "<p>⚠️ Failed to load books.</p>";
+        console.error(err);
+      }
     }
-    inventory = json.books.map(b => ({
-      title: b.title || b.Title || '',
-      author: b.author || b.Author || '',
-      genre: b.genre || b.Genre || '',
-      price: Number((b.discounted && b.discounted !== '') ? b.discounted : b.price || b.Price || 0),
-      location: b.location || b.Location || '',
-      stock: Number(b.stock || b.Stock || 0),
-      image: b.image || b.ImageURL || b.Image || '',
-      description: b.description || b.Description || ''
-    }));
-    buildFilterDropdown(); renderBooks();
-  } catch (err) {
-    console.error(err);
-    document.getElementById('bookList').innerHTML = '<div style="color:#ef4444">Failed to load books.</div>';
-  }
-}
 
-/* render book cards */
-function renderBooks() {
-  const q = el('search').value.trim().toLowerCase();
-  const active = document.querySelector('input[name=filterBy]:checked').value;
-  const dropdown = document.querySelector('#filterDropdownWrap select');
-  const filterVal = dropdown ? dropdown.value : '';
-
-  const list = el('bookList'); list.innerHTML = '';
-  inventory.forEach((b, i) => {
-    if (q && !b.title.toLowerCase().includes(q)) return;
-    if ((active === 'author' || active === 'genre') && filterVal) {
-      if (active === 'author' && b.author !== filterVal) return;
-      if (active === 'genre' && b.genre !== filterVal) return;
+    function renderBooks(list) {
+      const container = document.getElementById("book-list");
+      container.innerHTML = "";
+      list.forEach(b => {
+        const div = document.createElement("div");
+        div.className = "book-card";
+        div.innerHTML = `
+          <img src="${b.image}">
+          <h3>${b.title}</h3>
+          <p>by ${b.author}</p>
+          <p class="price">₱${b.price}</p>
+          <button>Add to Cart</button>
+        `;
+        div.querySelector("button").onclick = () => addToCart(b);
+        container.appendChild(div);
+      });
     }
-    const img = b.image || 'https://via.placeholder.com/400x600?text=No+Image';
-    const card = document.createElement('div'); card.className = 'book';
-    card.innerHTML = `
-      <img src="${img}" alt="${escapeHtml(b.title)}">
-      <div class="bd">
-        <h3>${escapeHtml(b.title)}</h3>
-        <div class="meta">by ${escapeHtml(b.author)} • ${escapeHtml(b.genre)} • <small>${escapeHtml(b.location)}</small></div>
-        <div class="desc">${escapeHtml(b.description)}</div>
-        <div class="foot">
-          <div class="price">${format(b.price)}</div>
-          <div><button class="btn" data-idx="${i}">Add</button></div>
-        </div>
-      </div>`;
-    list.appendChild(card);
-  });
-  // bind add buttons
-  document.querySelectorAll('.btn').forEach(btn => btn.addEventListener('click', e => {
-    const idx = Number(e.currentTarget.dataset.idx); addToCart(idx);
-  }));
-}
 
-/* make the author/genre dropdown built from inventory values */
-function buildFilterDropdown() {
-  const wrap = document.getElementById('filterDropdownWrap');
-  wrap.innerHTML = ''; // clear
-  const radios = document.querySelectorAll('input[name=filterBy]');
-  radios.forEach(r => r.addEventListener('change', onFilterChange));
-  el('search').addEventListener('input', renderBooks);
-  // initially hidden dropdown
-  onFilterChange();
-}
-function onFilterChange() {
-  const active = document.querySelector('input[name=filterBy]:checked').value;
-  const wrap = el('filterDropdownWrap');
-  wrap.innerHTML = '';
-  if (active === 'author' || active === 'genre') {
-    const values = [...new Set(inventory.map(b => active === 'author' ? b.author : b.genre).filter(Boolean))].sort();
-    const select = document.createElement('select');
-    select.innerHTML = `<option value="">-- all ${active}s --</option>` + values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
-    select.addEventListener('change', ()=> renderBooks());
-    wrap.appendChild(select);
-  }
-  renderBooks();
-}
-
-/* cart operations */
-function cartKey(b) { return `${b.title}___${b.author}`; }
-function addToCart(idx) {
-  const b = inventory[idx];
-  if (!b || b.stock === 0) { alert('Out of stock'); return; }
-  const key = cartKey(b);
-  if (!cart[key]) cart[key] = { title: b.title, author: b.author, price: b.price, qty: 0 };
-  cart[key].qty++;
-  renderCart();
-}
-function updateQty(key, val) {
-  const q = Math.max(1, Number(val)||1);
-  cart[key].qty = q;
-  renderCart();
-}
-function removeCart(key) {
-  delete cart[key];
-  renderCart();
-}
-function renderCart() {
-  const tbody = document.querySelector('#cartTable tbody'); tbody.innerHTML = '';
-  const keys = Object.keys(cart);
-  if (!keys.length) { el('cartArea').style.display = 'none'; el('cartEmpty').style.display = 'block'; el('cartTotal').innerText = format(0); return; }
-  el('cartArea').style.display = 'block'; el('cartEmpty').style.display = 'none';
-  let total = 0; let i=1;
-  keys.forEach(k => {
-    const it = cart[k];
-    const subtotal = it.price * it.qty;
-    total += subtotal;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${i++}</td>
-                    <td>${escapeHtml(it.title)} by ${escapeHtml(it.author)}</td>
-                    <td><input class="qty" type="number" min="1" value="${it.qty}" data-key="${k}"></td>
-                    <td>${format(it.price)}</td>
-                    <td>${format(subtotal)}</td>
-                    <td><button data-remove="${k}">X</button></td>`;
-    tbody.appendChild(tr);
-  });
-  // bind quantity inputs
-  tbody.querySelectorAll('input.qty').forEach(inp => {
-    inp.addEventListener('change', e => updateQty(e.target.dataset.key, e.target.value));
-  });
-  tbody.querySelectorAll('button[data-remove]').forEach(b => {
-    b.addEventListener('click', e => removeCart(e.target.dataset.remove));
-  });
-  el('cartTotal').innerText = format(total);
-}
-
-/* Confirm order -> POST to backend */
-document.getElementById('confirmBtn').addEventListener('click', async () => {
-  const items = Object.values(cart).map(it => ({ title: it.title, author: it.author, qty: it.qty, price: it.price }));
-  if (!items.length) return alert('Cart is empty');
-  const total = Number(Object.values(cart).reduce((s, it) => s + (it.price*it.qty),0));
-  const payload = { action: 'placeOrder', cart: items };
-  if (SECRET_TOKEN) payload.token = SECRET_TOKEN;
-
-  try {
-    const res = await fetch(WEBAPP_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-    });
-    const json = await res.json();
-    if (json && json.success) {
-      alert('✅ Order saved. Order ID: ' + json.orderId);
-      cart = {}; renderCart();
-    } else {
-      alert('❌ Failed to save order: ' + (json && json.error ? json.error : 'unknown'));
+    function addToCart(book) {
+      const existing = cart.find(item => item.title === book.title && item.author === book.author);
+      if (existing) { existing.qty++; }
+      else { cart.push({ ...book, qty: 1 }); }
+      renderCart();
+      updateCartBadge();
     }
-  } catch (err) {
-    console.error(err);
-    alert('Error saving order: ' + err.message);
-  }
-});
 
-/* small helper to avoid XSS display problems */
-function escapeHtml(s) {
-  return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-}
+    function removeFromCart(index) {
+      cart.splice(index,1);
+      renderCart();
+      updateCartBadge();
+    }
 
-/* init */
-loadBooks();
-</script>
+    function renderCart() {
+      const container = document.getElementById("cart-items");
+      container.innerHTML = "";
+      let total = 0;
+      cart.forEach((item,i)=>{
+        const sub = item.price*item.qty;
+        total+=sub;
+        const row = document.createElement("div");
+        row.className="cart-item";
+        row.innerHTML=`
+          <span>${item.title} by ${item.author} (x${item.qty})</span>
+          <span>₱${sub} <button data-i="${i}">❌</button></span>
+        `;
+        row.querySelector("button").onclick=()=>removeFromCart(i);
+        container.appendChild(row);
+      });
+      document.getElementById("cart-total").textContent=total.toFixed(2);
+    }
+
+    function updateCartBadge() {
+      const count = cart.reduce((sum,it)=>sum+it.qty,0);
+      document.getElementById("cart-count").textContent=count;
+    }
+
+    document.getElementById("floating-cart").onclick=()=> {
+      document.getElementById("cart-drawer").classList.add("open");
+    };
+    document.getElementById("close-cart").onclick=()=> {
+      document.getElementById("cart-drawer").classList.remove("open");
+    };
+
+    document.getElementById("checkout-btn").onclick=async()=>{
+      if(cart.length===0){ alert("Your cart is empty!"); return;}
+      try{
+        const res=await fetch(API_URL,{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({action:"placeOrder",cart})
+        });
+        const data=await res.json();
+        if(data.status==="success"){
+          alert("✅ Order placed! OrderID: "+data.orderId);
+          cart=[]; renderCart(); updateCartBadge();
+          document.getElementById("cart-drawer").classList.remove("open");
+        }else{
+          alert("⚠️ Failed to save order.");
+        }
+      }catch(err){
+        alert("⚠️ Error saving order.");
+        console.error(err);
+      }
+    };
+
+    loadBooks();
+  </script>
 </body>
 </html>
